@@ -3,7 +3,7 @@ import { useCallback, useMemo, useState } from "react";
 import say from "say";
 import { v4 as uuidv4 } from "uuid";
 import { Chat, ChatHook, Model } from "../type";
-import { chatTransfomer } from "../utils";
+import { chatTransformer } from "../utils";
 import { useAutoTTS } from "./useAutoTTS";
 import { getConfiguration, useChatGPT } from "./useChatGPT";
 import { useHistory } from "./useHistory";
@@ -60,10 +60,10 @@ export function useChat<T extends Chat>(props: T[]): ChatHook {
     const getHeaders = function () {
       const config = getConfiguration();
       if (!config.useAzure) {
-        return { apiKey: "", params: {} };
+        return { apiKey: {}, params: {} };
       }
       return {
-        apiKey: config.apiKey,
+        apiKey: { "api-key": config.apiKey },
         params: { "api-version": "2023-06-01-preview" },
       };
     };
@@ -73,14 +73,15 @@ export function useChat<T extends Chat>(props: T[]): ChatHook {
         {
           model: model.option,
           temperature: Number(model.temperature),
-          messages: [...chatTransfomer(data.reverse(), model.prompt), { role: "user", content: question }],
+          messages: [...chatTransformer(data.reverse(), model.prompt), { role: "user", content: question }],
           stream: useStream,
         },
         {
           httpAgent: proxy,
+          // https://github.com/openai/openai-node/blob/master/examples/azure.ts
           // Azure OpenAI requires a custom baseURL, api-version query param, and api-key header.
           query: { ...getHeaders().params },
-          headers: { apiKey: getHeaders().apiKey },
+          headers: { ...getHeaders().apiKey },
         }
       )
       .then(async (res) => {
