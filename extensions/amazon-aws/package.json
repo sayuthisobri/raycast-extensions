@@ -15,7 +15,9 @@
     "crisboarna",
     "sidhant92",
     "DorukAkinci",
-    "frese"
+    "frese",
+    "nagauta",
+    "vineus"
   ],
   "categories": [
     "Developer Tools",
@@ -44,6 +46,12 @@
       "name": "ecs",
       "title": "ECS Clusters",
       "description": "Find and open a cluster",
+      "mode": "view"
+    },
+    {
+      "name": "ecr",
+      "title": "ECR Repositories",
+      "description": "Find and open an image repository",
       "mode": "view"
     },
     {
@@ -121,15 +129,23 @@
           "default": "/bin/zsh -l -c \"assume -c <profile>\""
         }
       ]
+    },
+    {
+      "name": "step-functions",
+      "title": "Step Functions",
+      "description": "Find and open a Step Function",
+      "mode": "view"
     }
   ],
   "dependencies": {
+    "@aws-sdk/client-sfn": "^3.216.0",
     "@aws-sdk/client-cloudformation": "^3.216.0",
     "@aws-sdk/client-cloudwatch-logs": "^3.226.0",
     "@aws-sdk/client-codepipeline": "^3.216.0",
     "@aws-sdk/client-dynamodb": "^3.216.0",
     "@aws-sdk/client-ec2": "^3.216.0",
     "@aws-sdk/client-ecs": "^3.216.0",
+    "@aws-sdk/client-ecr": "^3.216.0",
     "@aws-sdk/client-lambda": "^3.216.0",
     "@aws-sdk/client-s3": "^3.216.0",
     "@aws-sdk/client-secrets-manager": "^3.226.0",

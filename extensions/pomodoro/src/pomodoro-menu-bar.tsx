@@ -1,5 +1,6 @@
-import { MenuBarExtra, Icon, launchCommand, LaunchType, Image, Color } from "@raycast/api";
+import { MenuBarExtra, Icon, Image, Color } from "@raycast/api";
 import { useState } from "react";
+import { FocusText, LongBreakText, ShortBreakText } from "../lib/constants";
 import {
   createInterval,
   getCurrentInterval,
@@ -10,6 +11,7 @@ import {
   duration,
   preferences,
   progress,
+  endOfInterval,
 } from "../lib/intervals";
 import { secondsToTime } from "../lib/secondsToTime";
 import { Interval, IntervalType } from "../lib/types";
@@ -24,17 +26,7 @@ export default function TogglePomodoroTimer() {
   const [currentInterval, setCurrentInterval] = useState<Interval | undefined>(getCurrentInterval());
 
   if (currentInterval && progress(currentInterval) >= 100) {
-    try {
-      launchCommand({
-        name: "pomodoro-control-timer",
-        type: LaunchType.UserInitiated,
-        context: { currentInterval },
-      });
-    } catch (error) {
-      console.error(error);
-    }
-
-    resetInterval();
+    endOfInterval(currentInterval);
   }
 
   function onStart(type: IntervalType) {
@@ -96,21 +88,21 @@ export default function TogglePomodoroTimer() {
       ) : (
         <>
           <MenuBarExtra.Item
-            title={`Focus`}
+            title={FocusText}
             subtitle={`${preferences.focusIntervalDuration}:00`}
             icon={`🎯`}
             onAction={() => onStart("focus")}
             shortcut={{ modifiers: ["cmd"], key: "f" }}
           />
           <MenuBarExtra.Item
-            title={`Short Break`}
+            title={ShortBreakText}
             subtitle={`${preferences.shortBreakIntervalDuration}:00`}
             icon={`🧘‍♂️`}
             onAction={() => onStart("short-break")}
             shortcut={{ modifiers: ["cmd"], key: "s" }}
           />
           <MenuBarExtra.Item
-            title={`Long Break`}
+            title={LongBreakText}
             subtitle={`${preferences.longBreakIntervalDuration}:00`}
             icon={`🚶`}
             onAction={() => onStart("long-break")}
