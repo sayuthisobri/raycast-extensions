@@ -1,11 +1,12 @@
-import { Icon, Color, Action, ActionPanel } from "@raycast/api";
+import { HAOpenUrlInAction } from "@components/actions";
+import { EntityStandardActionSections } from "@components/entity";
 import { ha } from "@lib/common";
 import { State } from "@lib/haapi";
+import { Action, ActionPanel, Color, Icon } from "@raycast/api";
+import React from "react";
 import { callSceneActivateService } from "./utils";
-import { EntityStandardActionSections } from "@components/entity";
-import { HAOpenUrlInAction } from "@components/actions";
 
-export function SceneActivateAction(props: { state: State }): JSX.Element | null {
+export function SceneActivateAction(props: { state: State }): React.ReactElement | null {
   const s = props.state;
   if (!s.entity_id.startsWith("scene")) {
     return null;
@@ -19,7 +20,7 @@ export function SceneActivateAction(props: { state: State }): JSX.Element | null
   );
 }
 
-export function SceneEditInBrowserAction(props: { state: State }): JSX.Element | null {
+export function SceneEditInBrowserAction(props: { state: State }): React.ReactElement | null {
   const s = props.state;
   if (s.entity_id.startsWith("scene")) {
     const id = props.state.attributes.id as number | undefined;

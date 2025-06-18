@@ -1,15 +1,17 @@
-import { Action, ActionPanel, Icon, List } from "@raycast/api";
-import { getAvatarIcon, useFetch } from "@raycast/utils";
+import { ActionPanel, Action, List, Icon } from "@raycast/api";
+import { getAvatarIcon, useCachedPromise, useFetch } from "@raycast/utils";
 import { useMemo, useState } from "react";
 
-import { Preset, PresetCategory, modelNames } from "./data/presets";
-import { raycastProtocol } from "./helpers";
+import { getAvailableAiModels } from "./api";
+import { Preset, PresetCategory } from "./data/presets";
+import { getIcon, raycastProtocol } from "./helpers";
 
-const CONTRIBUTE_URL = "https://github.com/raycast/preset-explorer/blob/main/data/presets.ts";
-const baseUrl = "https://presets.ray.so";
+const CONTRIBUTE_URL = "https://github.com/raycast/ray-so";
+const baseUrl = "https://ray.so/presets";
 
 export default function ExplorePresets() {
-  const { data: categories, isLoading } = useFetch<PresetCategory[]>(`${baseUrl}/api/presets`);
+  const { data: aiModels, isLoading: isAiModelsLoading } = useCachedPromise(getAvailableAiModels);
+  const { data: categories, isLoading } = useFetch<PresetCategory[]>(`https://ray.so/api/presets`);
   const [selectedCategory, setSelectedCategory] = useState("");
 
   const filteredCategories = useMemo(() => {
@@ -29,9 +31,7 @@ export default function ExplorePresets() {
         <List.Dropdown tooltip="Select Category" onChange={setSelectedCategory} value={selectedCategory}>
           <List.Dropdown.Item icon={Icon.BulletPoints} title="All Categories" value="" />
           {categories?.map((category) => {
-            const icon = category.icon
-              .replace(/-([a-z])/g, (g) => g[1].toUpperCase())
-              .replace(/^./, (str) => str.toUpperCase()) as keyof typeof Icon;
+            const icon = getIcon(category.icon || "");
             return (
               <List.Dropdown.Item
                 key={category.slug}
@@ -48,31 +48,54 @@ export default function ExplorePresets() {
         <List.Section key={category.name} title={category.name}>
           {category.presets.map((preset) => {
             const addToRaycastUrl = `${raycastProtocol}presets/import?${makeQueryString(preset)}`;
-            const icon = preset.icon
-              .replace(/-([a-z])/g, (g) => g[1].toUpperCase())
-              .replace(/^./, (str) => str.toUpperCase()) as keyof typeof Icon;
+            const icon = getIcon(preset.icon || "");
+
+            const aiModel = aiModels?.find((model) => model.id === preset.model);
+            const modelName =
+              isAiModelsLoading && !aiModels
+                ? "Loading…"
+                : `${aiModel?.provider_name || ""} ${aiModel?.name || ""}`.trim();
             return (
               <List.Item
                 key={preset.id}
                 title={preset.name}
                 icon={Icon[icon] ?? Icon.Code}
-                keywords={[category.name, preset.creativity]}
+                keywords={[category.name, preset.creativity || "unspecified"]}
                 detail={
                   <List.Item.Detail
                     markdown={preset.instructions}
                     metadata={
                       <List.Item.Detail.Metadata>
                         <List.Item.Detail.Metadata.Label title="Name" text={preset.name} />
-                        <List.Item.Detail.Metadata.Label title="Model" text={modelNames[preset.model]} />
-                        <List.Item.Detail.Metadata.Label
-                          title="Creativity"
-                          text={preset.creativity.charAt(0).toUpperCase() + preset.creativity.slice(1)}
-                          icon={getCreativityIcon(preset.creativity)}
-                        />
-                        <List.Item.Detail.Metadata.Label title="Web Search" text={preset.web_search ? "On" : "Off"} />
-                        {preset.image_generation ? (
-                          <List.Item.Detail.Metadata.Label title="Image Generation" text="On" />
-                        ) : null}
+                        <List.Item.Detail.Metadata.Label title="Model" text={modelName} />
+                        {preset.tools ? (
+                          preset.tools.map((tool, i) => (
+                            <List.Item.Detail.Metadata.Label
+                              key={tool.id}
+                              title={i === 0 ? "AI Extensions" : ""}
+                              text={tool.name.charAt(0).toUpperCase() + tool.name.slice(1)}
+                            />
+                          ))
+                        ) : (
+                          <>
+                            <List.Item.Detail.Metadata.Label
+                              title="Creativity"
+                              text={
+                                preset.creativity
+                                  ? preset.creativity.charAt(0).toUpperCase() + preset.creativity.slice(1)
+                                  : "Not specified"
+                              }
+                              icon={getCreativityIcon(preset.creativity)}
+                            />
+                            <List.Item.Detail.Metadata.Label
+                              title="Web Search"
+                              text={preset.web_search ? "On" : "Off"}
+                            />
+                            {preset.image_generation ? (
+                              <List.Item.Detail.Metadata.Label title="Image Generation" text="On" />
+                            ) : null}
+                          </>
+                        )}
                         {preset.author ? (
                           <List.Item.Detail.Metadata.Label
                             title="Author"
@@ -118,7 +141,7 @@ export default function ExplorePresets() {
 }
 
 function getCreativityIcon(creativity: Preset["creativity"]) {
-  if (creativity === "none") {
+  if (!creativity || creativity === "none") {
     return Icon.CircleDisabled;
   }
 

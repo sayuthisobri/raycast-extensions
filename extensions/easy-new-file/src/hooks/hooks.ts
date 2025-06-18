@@ -1,12 +1,14 @@
 import { codeFileTypes, documentFileTypes, scriptFileTypes, TemplateType } from "../types/file-type";
 import { useCallback, useEffect, useState } from "react";
 import fse from "fs-extra";
-import path from "path";
+import path, { parse } from "path";
 import { Alert, confirmAlert, Icon } from "@raycast/api";
 import { templateFolderPath } from "../utils/constants";
+import { getFinderPath } from "../utils/common-utils";
 
 //new file here
 export const getTemplateFile = (refresh: number) => {
+  const [folder, setFolder] = useState<string>("");
   const [templateFiles, setTemplateFiles] = useState<TemplateType[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
@@ -15,17 +17,22 @@ export const getTemplateFile = (refresh: number) => {
     try {
       fse.ensureDirSync(templateFolderPath);
       fse.readdirSync(templateFolderPath).forEach((file) => {
-        if (!file.startsWith(".")) {
-          const filePath = templateFolderPath + "/" + file;
-          const parsedPath = path.parse(filePath);
-          _templateFiles.push({
-            path: filePath,
-            name: parsedPath.name,
-            extension: parsedPath.ext.substring(1),
-            inputContent: false,
-          });
+        const filePath = templateFolderPath + "/" + file;
+        const parsedPath = path.parse(filePath);
+        let ext: string = parsedPath.ext.substring(1);
+        if (parsedPath.name.startsWith(".")) {
+          ext = parsedPath.name.split(".").length > 1 ? parsedPath.name.split(".")[1] : "";
         }
+        _templateFiles.push({
+          path: filePath,
+          name: parsedPath.name,
+          extension: ext,
+          inputContent: false,
+        });
       });
+      const finderPath = await getFinderPath();
+      const parsedPath = parse(finderPath);
+      setFolder(parsedPath.name);
       setTemplateFiles(_templateFiles);
       setIsLoading(false);
     } catch (e) {
@@ -38,7 +45,7 @@ export const getTemplateFile = (refresh: number) => {
     void fetchData();
   }, [fetchData]);
 
-  return { templateFiles: templateFiles, isLoading: isLoading };
+  return { folder, templateFiles: templateFiles, isLoading: isLoading };
 };
 
 //new file with name
@@ -97,10 +104,12 @@ export const alertDialog = async (
     message: message,
     primaryAction: {
       title: confirmTitle,
+      style: Alert.ActionStyle.Destructive,
       onAction: confirmAction,
     },
     dismissAction: {
       title: "Cancel",
+      style: Alert.ActionStyle.Cancel,
       onAction: () => cancelAction,
     },
   };

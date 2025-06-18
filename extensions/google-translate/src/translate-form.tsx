@@ -1,18 +1,19 @@
 import React from "react";
 import { Action, ActionPanel, Form, Icon, showToast, Toast } from "@raycast/api";
 import { usePromise } from "@raycast/utils";
-import { useDebouncedValue, useSelectedLanguagesSet, useTextState } from "./hooks";
+import { useDebouncedValue, useSelectedLanguagesSet, useTextState, usePreferences } from "./hooks";
 import { LanguageCode, supportedLanguagesByCode, languages, getLanguageFlag } from "./languages";
 import { AUTO_DETECT, simpleTranslate } from "./simple-translate";
 import { LanguagesManagerList } from "./LanguagesManager";
-import { ConfigurableCopyPasteActions } from "./actions";
+import { ConfigurableCopyPasteActions, OpenOnGoogleTranslateWebsiteAction } from "./actions";
 
 export default function TranslateForm() {
   const [selectedLanguageSet, setSelectedLanguageSet] = useSelectedLanguagesSet();
   const langFrom = selectedLanguageSet.langFrom;
-  const langTo = selectedLanguageSet.langTo;
+  const langTo = Array.isArray(selectedLanguageSet.langTo) ? selectedLanguageSet.langTo[0] : selectedLanguageSet.langTo;
+  const { proxy } = usePreferences();
   const setLangFrom = (l: LanguageCode) => setSelectedLanguageSet({ ...selectedLanguageSet, langFrom: l });
-  const setLangTo = (l: LanguageCode) => setSelectedLanguageSet({ ...selectedLanguageSet, langTo: l });
+  const setLangTo = (l: LanguageCode) => setSelectedLanguageSet({ ...selectedLanguageSet, langTo: [l] });
   const fromLangObj = supportedLanguagesByCode[langFrom];
   const toLangObj = supportedLanguagesByCode[langTo];
 
@@ -20,7 +21,7 @@ export default function TranslateForm() {
   const debouncedValue = useDebouncedValue(text, 500);
   const { data: translated, isLoading } = usePromise(
     simpleTranslate,
-    [debouncedValue, { langFrom: fromLangObj.code, langTo: toLangObj.code }],
+    [debouncedValue, { langFrom: fromLangObj.code, langTo: [toLangObj.code], proxy }],
     {
       onError(error) {
         showToast({
@@ -66,19 +67,7 @@ export default function TranslateForm() {
               shortcut={{ modifiers: ["cmd", "shift"], key: "p" }}
               content={translated?.pronunciationText ?? ""}
             />
-            <Action.OpenInBrowser
-              title="Open in Google Translate"
-              shortcut={{ modifiers: ["opt"], key: "enter" }}
-              url={
-                "https://translate.google.com/?sl=" +
-                langFrom +
-                "&tl=" +
-                langTo +
-                "&text=" +
-                encodeURIComponent(text) +
-                "&op=translate"
-              }
-            />
+            <OpenOnGoogleTranslateWebsiteAction translationText={text} translation={{ langFrom, langTo }} />
             <Action.Push
               icon={Icon.Pencil}
               title="Manage language sets..."
@@ -90,7 +79,7 @@ export default function TranslateForm() {
             <Action
               shortcut={{ modifiers: ["cmd", "shift"], key: "s" }}
               onAction={() => {
-                setSelectedLanguageSet({ langFrom: langTo, langTo: langFrom });
+                setSelectedLanguageSet({ langFrom: langTo, langTo: [langFrom] });
               }}
               title={`${getLanguageFlag(toLangObj, toLangObj?.code)} <-> ${getLanguageFlag(
                 fromLangObj,

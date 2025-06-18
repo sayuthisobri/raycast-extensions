@@ -16,9 +16,63 @@ npm install --save @raycast/utils
 
 ## Changelog
 
+### v2.0.0
+
+- The library can now be tree-shaken, reducing its size considerably.
+- When using `usePromise` and mutating the data with an optimistic update before it is fetched, the current fetch will be aborted to avoid a race condition.
+- Add a new [`runPowerShellScript`](./functions/runPowerShellScript.md) function.
+
+### v1.19.1
+
+- Fixed an issue where arguments weren't passed to `withCache`.
+
+### v1.19.0
+
+- Add a new [`withCache`](./functions/withCache.md) function.
+
+### v1.18.1
+
+- Fixed an issue where setting `timeout` to `0` in `runAppleScript` would not work.
+
+### v1.18.0
+
+- Add a new [`executeSQL](./functions/executeSQL.md) function.
+
+### v1.17.0
+
+- Add a new [`createDeeplink`](./functions/createDeeplink.md) function.
+
+### v1.16.5
+
+- Fixed the bug where `failureToastOptions` did not apply for `useExec` and `useStreamJSON` hooks.
+
+### v1.16.4
+
+- Avoid throwing an error when `useFetch` can't parse the `Content-Type` header of the response.
+
+### v1.16.3
+
+- Fix an issue where `URLSearchParams` couldn't be passed as an option to `useFetch` or `useCachedPromise`, causing extensions to crash.
+
+### v1.16.2
+
+- Fixed the refresh token flow to log out the user instead of throwing an error.
+
+### v1.16.1
+
+- Fixed an issue where `bodyEncoding` wasn't properly used in OAuthService.
+
+### v1.16.0
+
+- Add a `failureToastOptions` prop to `useFetch`, `useCachedPromise`, and `usePromise` to make it possible to customize the error displayed instead of a generic "Failed to fetch latest data".
+
+### v1.15.0
+
+- Add [`useLocalStorage`](./react-hooks/useLocalStorage.md) hook.
+
 ### v1.14.0
 
-- Add `useStreamJSON` hook.
+- Add [`useStreamJSON`](./react-hooks/useStreamJSON.md) hook.
 
 ### v1.13.6
 

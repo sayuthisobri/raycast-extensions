@@ -22,10 +22,12 @@ const oldMatchGithub =
   /# Extension – \[[^\]]*\]\(https:\/\/(?:www\.)?github\.com\/raycast\/extensions\/[^\s]*extensions\/([^\/\s]+)\/\)/;
 
 const closeIssueMatch = /@raycastbot close this issue/;
+const closeIssueAsNotPlannedMatch = /@raycastbot close as not planned/;
 const reopenIssueMatch = /@raycastbot reopen this issue/;
 const renameIssueMatch = /@raycastbot rename this issue to "(.+)"/;
 const assignMeMatch = /@raycastbot assign me/;
 const goodFirstIssueMatch = /@raycastbot good first issue/;
+const keepIssueOpenMatch = /@raycastbot keep this issue open/;
 
 export default async ({ github, context }: API) => {
   const sender = context.payload.sender.login;
@@ -101,12 +103,7 @@ export default async ({ github, context }: API) => {
     // we don't want to label the issue here, only answer to a comment
 
     // if the one who posts a comment is an owner of the extension related to the issue
-    if (
-      context.payload.comment.user &&
-      (owners.indexOf(context.payload.comment.user.login) !== -1 ||
-        // also allow the OP to close the issue that way
-        context.payload.comment.user.login === context.payload.issue.user.login)
-    ) {
+    if (context.payload.comment.user && owners.indexOf(context.payload.comment.user.login) !== -1) {
       if (closeIssueMatch.test(context.payload.comment.body)) {
         console.log(`closing #${context.payload.issue.number}`);
         await github.rest.issues.update({
@@ -114,6 +111,15 @@ export default async ({ github, context }: API) => {
           owner: context.repo.owner,
           repo: context.repo.repo,
           state: "closed",
+        });
+      } else if (closeIssueAsNotPlannedMatch.test(context.payload.comment.body)) {
+        console.log(`closing #${context.payload.issue.number} as not planned`);
+        await github.rest.issues.update({
+          issue_number: context.payload.issue.number,
+          owner: context.repo.owner,
+          repo: context.repo.repo,
+          state: "closed",
+          state_reason: "not_planned",
         });
       } else if (reopenIssueMatch.test(context.payload.comment.body)) {
         console.log(`reopening #${context.payload.issue.number}`);
@@ -148,9 +154,30 @@ export default async ({ github, context }: API) => {
           repo: context.repo.repo,
           labels: ["Good first issue"],
         });
+      } else if (keepIssueOpenMatch.test(context.payload.comment.body)) {
+        console.log(`Adding the "Dont close" label to #${context.payload.issue.number}`);
+        await github.rest.issues.addLabels({
+          issue_number: context.payload.issue.number,
+          owner: context.repo.owner,
+          repo: context.repo.repo,
+          labels: ["Dont close"],
+        });
       } else {
         console.log(`didn't find the right comment`);
       }
+    } else if (
+      // also allow the OP to close the issue that way
+      context.payload.comment.user &&
+      context.payload.comment.user.login === context.payload.issue.user.login &&
+      closeIssueMatch.test(context.payload.comment.body)
+    ) {
+      console.log(`closing #${context.payload.issue.number}`);
+      await github.rest.issues.update({
+        issue_number: context.payload.issue.number,
+        owner: context.repo.owner,
+        repo: context.repo.repo,
+        state: "closed",
+      });
     } else {
       console.log(`${context.payload.comment.user.login} is not an owner`);
     }
@@ -208,10 +235,12 @@ Unfortunately it seems like nobody is maintaining this extension anymore. If you
 The author and contributors of \`${extension}\` can trigger bot actions by commenting:
 
 - \`@raycastbot close this issue\` Closes the issue.
+- \`@raycastbot close as not planned\` Closes the issue as not planned.
 - \`@raycastbot rename this issue to "Awesome new title"\` Renames the issue.
 - \`@raycastbot reopen this issue\` Reopens the issue.
 - \`@raycastbot assign me\` Assigns yourself to the issue.
 - \`@raycastbot good first issue\` Adds the "Good first issue" label to the issue.
+- \`@raycastbot keep this issue open\` Make sure the issue won't go stale and will be kept open by the bot.
 
 </details>`,
   });

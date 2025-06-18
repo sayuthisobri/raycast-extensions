@@ -1,8 +1,8 @@
+import { State } from "@lib/haapi";
+import { useCachedState } from "@raycast/utils";
 import { Connection, entitiesColl, subscribeEntities } from "home-assistant-js-websocket";
 import { useEffect, useRef, useState } from "react";
 import { getHAWSConnection } from "../lib/common";
-import { State } from "@lib/haapi";
-import { useCachedState } from "@raycast/utils";
 
 interface EntityRegistryEntry {
   device_id?: string | null;
@@ -43,9 +43,9 @@ export function useHAStates(): {
   isLoading: boolean;
 } {
   const [states, setStates] = useCachedState<State[]>("states");
-  const [error, setError] = useState<Error>();
+  const [error, setError] = useState<Error | undefined>(undefined);
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const hawsRef = useRef<Connection>();
+  const hawsRef = useRef<Connection | null>(null);
 
   useEffect(() => {
     async function fetchData() {
