@@ -1,5 +1,18 @@
 # T3 Chat Changelog
 
+## [v1.4.0] - 2026-01-27
+
+- Added support for latest AI models
+- Removed beta preference (no longer supported)
+
+## [v1.3.0] - 2025-11-03
+
+- Added support for latest AI models
+
+## [v1.2.1] - 2025-07-28
+
+- Updated icon
+
 ## [v1.2.0] - 2025-05-26
 
 - Added search grounding support for compatible models (currently Gemini family)

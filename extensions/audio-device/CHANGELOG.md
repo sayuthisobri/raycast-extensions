@@ -1,5 +1,36 @@
 # Audio Device Changelog
 
+## Chore - 2026-02-07
+- Fix issues in lint due to newer ESlint package
+
+## [Fix] - 2026-02-04
+
+- Hidden devices tracked per input/output and shared across manual lists and auto-switch
+
+## [Update] - 2026-02-06
+
+- Add Windows support via platform abstraction
+- Refactor audio handling into a platform abstraction layer.
+- Moves macOS binary logic to src/platform/macos and adds
+- Windows support via PowerShell AudioDeviceCmdlets.
+- Update raycast package
+
+## [Update] - 2026-02-02
+
+- Added auto-switch commands with device order customization and toggles
+
+## [Fix] - 2025-09-11
+
+- Remove problematic "airplay support" toggle
+
+## [Update] - 2025-08-04
+
+- Added frecency sorting to the devices list
+
+## [Update] - 2025-06-26
+
+- Added support for device name for quick links
+
 ## [Update] - 2025-06-11
 
 - Added combo commands to simultaneously change input and output device

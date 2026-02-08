@@ -8,7 +8,9 @@
   "contributors": [
     "j3lte",
     "markusjura",
-    "fabitosh"
+    "fabitosh",
+    "geekyed",
+    "0xdhrv"
   ],
   "categories": [
     "Productivity",
@@ -46,7 +48,18 @@
       "title": "List Events",
       "description": "View your upcoming Google Calendar events",
       "mode": "view",
-      "subtitle": "Google Calendar"
+      "subtitle": "Google Calendar",
+      "preferences": [
+        {
+          "name": "openCommandJoinsMeeting",
+          "type": "checkbox",
+          "title": "Advanced",
+          "label": "Join meeting",
+          "description": "Change the default behavior when opening an event to directly join the meeting (if a meeting link is available)",
+          "default": false,
+          "required": false
+        }
+      ]
     },
     {
       "name": "list-calendars",
@@ -137,12 +150,34 @@
       ],
       "default": "30",
       "required": false
+    },
+    {
+      "name": "sendInvitations",
+      "title": "Send Invitations",
+      "description": "Whether to send email invitations (including meeting links) to guests when creating or editing events",
+      "type": "dropdown",
+      "data": [
+        {
+          "title": "All Guests",
+          "value": "all"
+        },
+        {
+          "title": "External Guests Only",
+          "value": "externalOnly"
+        },
+        {
+          "title": "None",
+          "value": "none"
+        }
+      ],
+      "default": "all",
+      "required": false
     }
   ],
   "dependencies": {
     "@googleapis/calendar": "^9.8.0",
     "@googleapis/people": "^3.0.9",
-    "@raycast/api": "^1.94.2",
+    "@raycast/api": "^1.103.0",
     "@raycast/utils": "^1.19.1",
     "date-fns": "^4.1.0",
     "humanize-duration": "^3.32.1",
@@ -166,5 +201,9 @@
     "lint": "ray lint",
     "prepublishOnly": "echo \"\\n\\nIt seems like you are trying to publish the Raycast extension to npm.\\n\\nIf you did intend to publish it to npm, remove the \\`prepublishOnly\\` script and rerun \\`npm publish\\` again.\\nIf you wanted to publish it to the Raycast Store instead, use \\`npm run publish\\` instead.\\n\\n\" && exit 1",
     "publish": "npx @raycast/api@latest publish"
-  }
+  },
+  "platforms": [
+    "macOS",
+    "Windows"
+  ]
 }
